@@ -98,7 +98,11 @@ class TeleportJwtVerifier
         $audiences = is_array($audience) ? $audience : [$audience];
 
         if (! in_array($expected, $audiences, true)) {
-            throw new TeleportJwtInvalidException('Teleport JWT audience does not match this app.');
+            throw new TeleportJwtInvalidException(sprintf(
+                'Teleport JWT audience does not match this app. expected=[%s] actual=[%s]',
+                $expected,
+                implode(', ', array_filter($audiences))
+            ));
         }
     }
 }
