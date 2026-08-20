@@ -1,0 +1,12 @@
+.git
+.env
+.env.example
+node_modules
+vendor
+storage/logs/*
+!storage/logs/.gitignore
+tests
+.editorconfig
+.gitattributes
+.gitignore
+README.md

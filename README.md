@@ -102,6 +102,75 @@ brew services start mysql
 
    Akses [http://127.0.0.1:8000](http://127.0.0.1:8000) — otomatis diarahkan ke halaman login.
 
+## Menjalankan dengan Docker
+
+Sebagai alternatif instalasi manual di atas, aplikasi ini juga bisa dijalankan sepenuhnya lewat Docker (Nginx + PHP-FPM + MySQL, 3 container terpisah via `docker-compose`).
+
+**Requirements**: Docker Engine + Docker Compose (`docker --version`, `docker-compose --version` atau `docker compose version`).
+
+1. **Siapkan file `.env`** (jika belum ada)
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Build image**
+
+   ```bash
+   docker-compose build
+   ```
+
+   Proses ini meng-compile asset Tailwind/Vite di build stage terpisah (Node) lalu menyalin hasilnya ke image PHP-FPM final — image production tidak membutuhkan Node runtime.
+
+3. **Jalankan seluruh stack**
+
+   ```bash
+   docker-compose up -d
+   ```
+
+   Ini menjalankan 3 service:
+   - `db` — MySQL 8.0 (database `nadi`, tanpa password root, data persisten di volume `db_data`)
+   - `app` — PHP-FPM yang menjalankan kode Laravel (menunggu `db` sehat lebih dulu)
+   - `webserver` — Nginx yang melayani request di `http://localhost:8080` dan meneruskan proses `.php` ke `app` lewat FastCGI
+
+4. **Generate `APP_KEY` & `JWT_SECRET`** (hanya perlu sekali, jika `.env` masih kosong)
+
+   ```bash
+   docker-compose exec app php artisan key:generate
+   docker-compose exec app php artisan jwt:secret
+   ```
+
+   Karena `.env` di-mount langsung ke dalam container `app`, perubahan yang ditulis oleh perintah di atas otomatis tersimpan kembali ke file `.env` di host.
+
+5. **Migrasi & seed database** (manual, dijalankan sendiri kapan pun dibutuhkan — bukan otomatis saat container start)
+
+   ```bash
+   docker-compose exec app php artisan migrate --seed
+   ```
+
+6. **Buka aplikasi**
+
+   Akses [http://localhost:8080](http://localhost:8080).
+
+### Perintah Docker yang berguna
+
+```bash
+docker-compose logs -f app          # lihat log aplikasi
+docker-compose exec app php artisan migrate:fresh --seed   # reset total data
+docker-compose exec app bash        # masuk ke shell container app
+docker-compose down                 # stop semua container (data DB tetap di volume)
+docker-compose down -v              # stop + hapus semua volume (termasuk data DB & cache asset)
+```
+
+> Catatan: `app_public` (asset hasil build Tailwind/Vite) dan `storage_data` adalah named volume yang otomatis terisi dari konten image saat pertama kali dibuat. Jika mengubah tampilan/CSS lalu `docker-compose build` ulang, jalankan `docker-compose down -v && docker-compose up -d` agar Nginx mengambil asset baru (bukan sekadar `restart`).
+
+Konfigurasi Docker berada di:
+```
+docker-compose.yml           Definisi 3 service (app, webserver, db)
+docker/php/Dockerfile        Multi-stage build: Node (asset) → PHP-FPM (Alpine)
+docker/nginx/default.conf    Konfigurasi vhost Nginx (proxy .php ke app:9000)
+```
+
 ## Akun Demo
 
 | Role | Email | Password |
