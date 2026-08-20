@@ -131,7 +131,7 @@ Sebagai alternatif instalasi manual di atas, aplikasi ini juga bisa dijalankan s
    Ini menjalankan 3 service:
    - `db` — MySQL 8.0 (database `nadi`, tanpa password root, data persisten di volume `db_data`)
    - `app` — PHP-FPM yang menjalankan kode Laravel (menunggu `db` sehat lebih dulu)
-   - `webserver` — Nginx yang melayani request di `http://localhost:8080` dan meneruskan proses `.php` ke `app` lewat FastCGI
+   - `webserver` — Nginx yang melayani request di `http://localhost:8081` dan meneruskan proses `.php` ke `app` lewat FastCGI
 
 4. **Generate `APP_KEY` & `JWT_SECRET`** (hanya perlu sekali, jika `.env` masih kosong)
 
@@ -150,7 +150,7 @@ Sebagai alternatif instalasi manual di atas, aplikasi ini juga bisa dijalankan s
 
 6. **Buka aplikasi**
 
-   Akses [http://localhost:8080](http://localhost:8080).
+   Akses [http://localhost:8081](http://localhost:8081).
 
 ### Perintah Docker yang berguna
 
