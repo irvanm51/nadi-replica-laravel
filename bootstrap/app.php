@@ -24,6 +24,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: [
             env('JWT_COOKIE_NAME', 'nadi_token'),
         ]);
+
+        // Production sits behind a reverse proxy (nginx/Caddy/Traefik on the
+        // VPS) that terminates TLS and forwards to this app over plain HTTP.
+        // Without trusting it, $request->secure() and route()/redirect()
+        // always resolve to http:// here — APP_URL alone does not fix this
+        // for URLs generated during a real request. '*' is used because the
+        // proxy's address as seen by the container isn't fixed/known; this
+        // is safe only as long as the app isn't also reachable directly,
+        // bypassing that proxy (e.g. bind the published port to 127.0.0.1).
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
