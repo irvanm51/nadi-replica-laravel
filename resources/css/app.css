@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-nadi-blue: #2563eb;
+    --color-nadi-purple: #7c3aed;
+}
+
+.captcha-lines {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(115deg, transparent 0 6px, rgba(153, 27, 27, 0.15) 6px 7px);
+    pointer-events: none;
+}
