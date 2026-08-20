@@ -13,17 +13,17 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'jwt.cookie' => \App\Http\Middleware\JwtCookieAuthenticate::class,
-            'guest.jwt' => \App\Http\Middleware\RedirectIfJwtAuthenticated::class,
+            'teleport.auth' => \App\Http\Middleware\TeleportAuthenticate::class,
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);
 
-        // The JWT cookie must stay a genuine, undecorated JWT (not Laravel's
-        // encrypted cookie format) so JwtCookieAuthenticate can hand it
-        // straight to JWTAuth, and so it's decodable for demo/verification.
-        $middleware->encryptCookies(except: [
-            env('JWT_COOKIE_NAME', 'nadi_token'),
-        ]);
+        // Point at the Teleport proxy/agent so $request->ip()/secure() reflect
+        // the real client once requests arrive via that proxy. This is a
+        // separate concern from TeleportAuthenticate's own trusted-peer check,
+        // which deliberately inspects the raw, unrewritten REMOTE_ADDR.
+        $middleware->trustProxies(
+            at: array_filter(explode(',', (string) env('TELEPORT_TRUSTED_PROXY_CIDRS', ''))),
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
